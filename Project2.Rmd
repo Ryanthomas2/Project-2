@@ -1,0 +1,151 @@
+---
+title: "Project 2"
+author: "Ryan Thomas"
+date: "2024-11-15"
+output: html_document
+---
+
+## R Markdown
+
+## **1. Introduction**
+
+The topic of my project is a dataset about the seven major social media platforms such as Instagram and Snapchat, and how the different types of phone have different price points and market value. I chose this data set because it something that I have a lot of interest in and I have had most of these phone models. I have a deep understanding of the data and can make statistics on relationships between variables easier. The link to the data set is provided below: [https://www.kaggle.com/datasets/willianoliveiragibin/phone-information-2024]()
+
+## **2. Data Preparation**
+
+Uploading the data was an easy process. I had found the dataset on Kaggle and then I did the process of going to the source which had the table listed and then I downloaded the file in the form of a csv. The file was downloaded successfully and it can be replicated
+
+## **3. Variable Descriptions**
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+phone <- read.csv("/Users/ryanthomas/downloads/DS/phone_info.csv")
+```
+
+```{r}
+library(knitr)
+
+# Load the dplyr package
+library(dplyr)
+
+# Select relevant columns from the dataset
+cleaned_data <- phone %>%
+  select(phone_brand, phone_model, price_USD, storage, ram, Display_Size, OS)
+
+
+# Variable description table
+variable_descriptions <- data.frame(
+  Variable = c("phone_brand", "phone_model", "price_USD", "storage", "ram", "Display_Size", "OS"),
+  Type = c("Character", "Character", "Numeric", "Numeric", "Numeric", "Numeric", "Character"),
+  Description = c(
+    "Brand of the smartphone",
+    "Specific model of the smartphone",
+    "Price of the phone in USD",
+    "Storage capacity in GB",
+    "RAM in GB",
+    "Screen size in inches",
+    "Operating System (e.g., iOS, Android)"
+  )
+)
+
+# Display the variable descriptions table
+kable(variable_descriptions, col.names = c("Variable", "Type", "Description"), format = "markdown")
+
+# Create new variables
+phone$price_per_gb <- phone$price_USD / phone$storage
+phone$performance_score <- phone$ram * phone$storage
+
+# View the first few rows of the updated dataset
+head(phone)
+```
+## **4. Univariate Analyse**
+```{r}
+# Load necessary library
+library(ggplot2)
+#these codes are all inline codes that are separated by the + symbol in different blocks that are continuous
+# Create a histogram for price_USD
+ggplot(phone, aes(x = price_USD)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "black", alpha = 0.7) +
+  geom_density(aes(y = ..count..), color = "blue", size = 1) +  
+  labs(
+    title = "Distribution of Prices (USD)",
+    x = "Price (USD)",
+    y = "Frequency"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),  # this code helps make the plot title move to the middle
+    axis.title = element_text(face = "bold"),
+    panel.grid.major = element_line(color = "gray", linetype = "dashed")
+  )
+# Histogram for RAM
+ggplot(phone, aes(x = ram)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black", alpha = 0.7) +
+  labs(title = "Distribution of RAM", x = "RAM (GB)", y = "Frequency") +
+  theme_minimal()
+
+# Histogram for Battery Capacity
+ggplot(phone, aes(x = BATTERY)) +
+  geom_histogram(binwidth = 500, fill = "green", color = "black", alpha = 0.7) +
+  labs(title = "Distribution of Battery Capacity", x = "Battery Capacity", y = "Frequency") +
+  theme_minimal()
+
+# Histogram for Display Size
+ggplot(phone, aes(x = Display_Size)) +
+  geom_histogram(binwidth = 0.5, fill = "purple", color = "black", alpha = 0.7) +
+  labs(title = "Distribution of Display Size", x = "Display Size (inches)", y = "Frequency") +
+  theme_minimal()
+```
+## **5. Multivariate Analyse**
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# 1. Scatter Plot: Display_Size vs. BATTERY with linear regression
+ggplot(phone, aes(x = Display_Size, y = BATTERY)) +
+  geom_point(alpha = 0.6, color = "blue") +
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  labs(title = "Display Size vs. Battery Capacity",
+       x = "Display Size (inches)",
+       y = "Battery Capacity (mAh)") +
+  theme_minimal()
+
+# Calculate correlation
+correlation <- cor(phone$Display_Size, phone$BATTERY, use = "complete.obs")
+print(paste("Correlation between Display Size and Battery Capacity:", round(correlation, 2)))
+
+# 2. Box Plot: RAM across Price Ranges
+ggplot(phone, aes(x = price_range, y = ram, fill = price_range)) +
+  geom_boxplot() +
+  labs(title = "RAM Distribution Across Price Ranges",
+       x = "Price Range",
+       y = "RAM (GB)") +
+  theme_minimal()
+
+# 3. Box Plot: Storage vs. Phone Model, created this plot to show the relationship between the two models and has a corelation
+
+# Box plot for price per phone brand
+ggplot(phone, aes(x = phone_brand, y = price)) +
+  geom_boxplot() +
+  labs(
+    title = "Box Plot of Price per Phone Brand",
+    x = "Phone Brand",
+    y = "Price"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#4 Bar Plot: Price range vs. display size, made a stacked bar plot to show the high and the low price ranges within the graph
+ggplot(phone, aes(x = price_range, y = Display_Size, fill = price_range)) +
+  geom_boxplot() +
+  labs(title = "Display Size Across Price Ranges",
+       x = "Price Range",
+       y = "Display Size (inches)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+## **6. Reproducibility**
